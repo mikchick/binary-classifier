@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -881,12 +882,17 @@ Respond with ONLY a JSON object, no markdown, no explanation outside the JSON:
 }`;
 
     try {
-      const res = await fetch('/proxy', {
+      const isLocal = ['localhost', '127.0.0.1'].includes(window.location.hostname);
+      const apiUrl  = isLocal ? '/proxy' : 'https://api.anthropic.com/v1/messages';
+      const headers = { 'Content-Type': 'application/json', 'x-api-key': apiKey };
+      if (!isLocal) {
+        headers['anthropic-version'] = '2023-06-01';
+        headers['anthropic-dangerous-direct-browser-access'] = 'true';
+      }
+
+      const res = await fetch(apiUrl, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-api-key': apiKey,
-        },
+        headers,
         body: JSON.stringify({
           model: 'claude-sonnet-4-6',
           max_tokens: 1000,
