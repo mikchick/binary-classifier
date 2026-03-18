@@ -1,0 +1,978 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>ORACLE</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,300;0,400;0,500;1,300&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0b;
+    --surface: #111113;
+    --surface2: #18181b;
+    --border: rgba(255,255,255,0.08);
+    --border-active: rgba(255,255,255,0.22);
+    --text: #e8e8e4;
+    --text-muted: #6b6b6b;
+    --text-dim: #3a3a3a;
+    --yes: #b8f5c8;
+    --yes-dim: rgba(184,245,200,0.15);
+    --no: #f5b8b8;
+    --no-dim: rgba(245,184,184,0.15);
+    --safe-top: env(safe-area-inset-top, 0px);
+    --safe-bottom: env(safe-area-inset-bottom, 0px);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+  html, body {
+    height: 100%;
+    overscroll-behavior: none;
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Mono', monospace;
+    min-height: 100dvh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* ── HEADER ── */
+  header {
+    border-bottom: 1px solid var(--border);
+    padding: 14px 20px;
+    padding-top: calc(14px + var(--safe-top));
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    flex-shrink: 0;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    background: var(--bg);
+  }
+
+  .wordmark {
+    font-family: 'Instrument Serif', serif;
+    font-size: 18px;
+    letter-spacing: 0.12em;
+  }
+
+  .wordmark em { font-style: italic; color: var(--text-muted); }
+
+  .session-pill {
+    font-size: 9px;
+    letter-spacing: 0.14em;
+    color: var(--text-dim);
+    text-transform: uppercase;
+  }
+
+  /* ── MAIN SCROLL CONTAINER ── */
+  main {
+    flex: 1;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-y: contain;
+  }
+
+  /* ── VIEWS ── */
+  .view {
+    min-height: calc(100dvh - 49px);
+    display: flex;
+    flex-direction: column;
+    padding: 24px 20px;
+    padding-bottom: calc(24px + var(--safe-bottom));
+  }
+
+  .view.hidden { display: none; }
+
+  /* ── INPUT VIEW ── */
+  .section-label {
+    font-size: 9px;
+    letter-spacing: 0.2em;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .section-label::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  .field-label {
+    font-size: 9px;
+    letter-spacing: 0.18em;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    margin-bottom: 10px;
+    display: block;
+  }
+
+  /* ── API KEY ── */
+  .api-key-input {
+    width: 100%;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 2px;
+    padding: 11px 14px;
+    color: var(--text);
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    outline: none;
+    letter-spacing: 0.05em;
+    -webkit-appearance: none;
+    transition: border-color 0.2s;
+  }
+
+  .api-key-input::placeholder { color: var(--text-dim); }
+  .api-key-input:focus { border-color: var(--border-active); }
+
+  .api-status {
+    font-size: 9px;
+    letter-spacing: 0.14em;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    margin-top: 6px;
+    margin-bottom: 24px;
+    min-height: 13px;
+    transition: color 0.2s;
+  }
+
+  .api-status.saved { color: var(--yes); }
+
+  /* ── RULE INPUT ── */
+  .rule-input {
+    width: 100%;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 2px;
+    padding: 14px 16px;
+    color: var(--text);
+    font-family: 'Instrument Serif', serif;
+    font-size: 20px;
+    line-height: 1.4;
+    outline: none;
+    transition: border-color 0.2s;
+    resize: none;
+    height: 76px;
+    -webkit-appearance: none;
+  }
+
+  .rule-input::placeholder { color: var(--text-dim); font-style: italic; }
+  .rule-input:focus { border-color: var(--border-active); }
+
+  .rule-presets {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 10px;
+    margin-bottom: 28px;
+  }
+
+  .preset-btn {
+    background: none;
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    padding: 6px 12px;
+    border-radius: 100px;
+    cursor: pointer;
+    letter-spacing: 0.04em;
+    transition: all 0.15s;
+    touch-action: manipulation;
+  }
+
+  .preset-btn:active { border-color: var(--border-active); color: var(--text); }
+
+  /* ── IMAGE UPLOAD ── */
+  .upload-area {
+    border: 1px dashed var(--border);
+    border-radius: 2px;
+    background: var(--surface);
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+    touch-action: manipulation;
+    margin-bottom: 16px;
+    transition: border-color 0.2s;
+  }
+
+  .upload-area:active { border-color: var(--border-active); }
+  .upload-area.has-image { border-style: solid; }
+
+  .upload-placeholder {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 32px 20px;
+  }
+
+  .upload-icon {
+    width: 36px;
+    height: 36px;
+    border: 1px solid var(--border);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    opacity: 0.4;
+    color: var(--text);
+  }
+
+  .upload-text {
+    font-size: 10px;
+    letter-spacing: 0.14em;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    text-align: center;
+    line-height: 1.8;
+  }
+
+  #preview-img {
+    width: 100%;
+    max-height: 260px;
+    object-fit: cover;
+    display: block;
+  }
+
+  .replace-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(10,10,11,0.65);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.15s;
+  }
+
+  .upload-area.has-image:active .replace-overlay { opacity: 1; }
+
+  .replace-overlay span {
+    font-size: 10px;
+    letter-spacing: 0.14em;
+    color: var(--text-muted);
+    text-transform: uppercase;
+  }
+
+  #file-input { display: none; }
+
+  /* ── CLASSIFY BUTTON ── */
+  .classify-btn {
+    width: 100%;
+    background: var(--text);
+    color: var(--bg);
+    border: none;
+    border-radius: 2px;
+    padding: 18px;
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: opacity 0.15s;
+    touch-action: manipulation;
+    margin-top: auto;
+  }
+
+  .classify-btn:active:not(:disabled) { opacity: 0.82; }
+
+  .classify-btn:disabled {
+    opacity: 0.2;
+    cursor: not-allowed;
+  }
+
+  .error-pill {
+    display: none;
+    background: rgba(245,184,184,0.1);
+    border: 1px solid rgba(245,184,184,0.2);
+    border-radius: 2px;
+    padding: 10px 14px;
+    font-size: 11px;
+    color: var(--no);
+    margin-top: 12px;
+    line-height: 1.5;
+  }
+  .error-pill.visible { display: block; }
+
+  /* ── LOADING VIEW ── */
+  .loading-view {
+    align-items: center;
+    justify-content: center;
+    gap: 28px;
+  }
+
+  .loading-img-thumb {
+    width: 64px;
+    height: 64px;
+    object-fit: cover;
+    border-radius: 2px;
+    opacity: 0.4;
+  }
+
+  .scanner {
+    width: 120px;
+    height: 120px;
+    position: relative;
+  }
+
+  .scanner-ring {
+    position: absolute;
+    inset: 0;
+    border: 1px solid var(--border-active);
+    border-radius: 50%;
+    border-top-color: transparent;
+    animation: spin 1.2s linear infinite;
+  }
+
+  .scanner-ring-2 {
+    position: absolute;
+    inset: 18px;
+    border: 1px solid var(--border);
+    border-radius: 50%;
+    border-bottom-color: transparent;
+    animation: spin 2s linear infinite reverse;
+  }
+
+  .scanner-dot {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%,-50%);
+    width: 5px; height: 5px;
+    background: var(--text);
+    border-radius: 50%;
+    opacity: 0.5;
+  }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .loading-label {
+    font-size: 9px;
+    letter-spacing: 0.22em;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    animation: pulse 1.5s ease-in-out infinite;
+  }
+
+  @keyframes pulse { 0%,100%{opacity:0.3} 50%{opacity:1} }
+
+  .loading-rule {
+    font-family: 'Instrument Serif', serif;
+    font-style: italic;
+    font-size: 15px;
+    color: var(--text-dim);
+    line-height: 1.4;
+    text-align: center;
+    max-width: 240px;
+  }
+
+  /* ── RESULT VIEW ── */
+  .result-view {
+    padding: 0;
+    padding-bottom: var(--safe-bottom);
+  }
+
+  /* Verdict hero */
+  .verdict-hero {
+    flex: none;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 48px 28px 36px;
+    text-align: center;
+    transition: background 0.4s;
+    position: relative;
+    overflow: hidden;
+    min-height: 52vw;
+  }
+
+  .verdict-hero.yes { background: var(--yes-dim); }
+  .verdict-hero.no  { background: var(--no-dim); }
+
+  /* Uploaded image faded behind verdict */
+  .verdict-hero-bg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    opacity: 0.18;
+    pointer-events: none;
+    transition: opacity 0.4s;
+  }
+
+  /* All direct children above the bg image */
+  .verdict-hero > *:not(.verdict-hero-bg) {
+    position: relative;
+    z-index: 1;
+  }
+
+  .verdict-count {
+    position: absolute;
+    top: 18px; right: 20px;
+    font-size: 9px;
+    letter-spacing: 0.18em;
+    color: var(--text-dim);
+    z-index: 1;
+  }
+
+  .verdict-word {
+    font-family: 'Instrument Serif', serif;
+    font-size: 80px;
+    line-height: 1;
+    margin-bottom: 4px;
+    animation: stamp-in 0.32s cubic-bezier(0.34,1.56,0.64,1) forwards;
+  }
+
+  @keyframes stamp-in {
+    from { opacity:0; transform: scale(1.35); }
+    to   { opacity:1; transform: scale(1); }
+  }
+
+  .verdict-word.yes { color: var(--yes); }
+  .verdict-word.no  { color: var(--no); }
+
+  .verdict-rule-text {
+    font-family: 'Instrument Serif', serif;
+    font-style: italic;
+    font-size: 14px;
+    color: var(--text-muted);
+    max-width: 260px;
+    line-height: 1.5;
+    margin-bottom: 24px;
+  }
+
+  .confidence-block {
+    width: 100%;
+    max-width: 200px;
+  }
+
+  .confidence-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 6px;
+    font-size: 9px;
+    letter-spacing: 0.16em;
+    color: var(--text-dim);
+    text-transform: uppercase;
+  }
+
+  .confidence-num { color: var(--text-muted); }
+
+  .confidence-track {
+    height: 2px;
+    background: var(--border);
+    border-radius: 1px;
+    overflow: hidden;
+  }
+
+  .confidence-fill {
+    height: 100%;
+    border-radius: 1px;
+    transition: width 0.8s cubic-bezier(0.16,1,0.3,1);
+  }
+
+  .confidence-fill.yes { background: var(--yes); }
+  .confidence-fill.no  { background: var(--no); }
+
+  /* Rationale + log */
+  .verdict-details {
+    flex: 1;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .detail-block {
+    border-top: 1px solid var(--border);
+    padding: 18px 20px;
+  }
+
+  .detail-label {
+    font-size: 9px;
+    letter-spacing: 0.18em;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+
+  .rationale-text {
+    font-family: 'Instrument Serif', serif;
+    font-style: italic;
+    font-size: 16px;
+    color: var(--text-muted);
+    line-height: 1.55;
+  }
+
+  /* History rows */
+  .history-row {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    padding: 7px 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 11px;
+    animation: fade-in 0.25s forwards;
+  }
+
+  @keyframes fade-in { from{opacity:0} to{opacity:1} }
+  .history-row:last-child { border-bottom: none; }
+
+  .history-verdict {
+    font-family: 'Instrument Serif', serif;
+    font-size: 14px;
+    min-width: 28px;
+    flex-shrink: 0;
+  }
+
+  .history-verdict.yes { color: var(--yes); }
+  .history-verdict.no  { color: var(--no); }
+
+  .history-rule {
+    flex: 1;
+    color: var(--text-muted);
+    font-style: italic;
+    font-family: 'Instrument Serif', serif;
+    font-size: 12px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .history-conf {
+    color: var(--text-dim);
+    font-size: 10px;
+    flex-shrink: 0;
+  }
+
+  /* Classify again bar */
+  .classify-again-bar {
+    border-top: 1px solid var(--border);
+    padding: 14px 20px;
+    padding-bottom: calc(14px + var(--safe-bottom));
+    background: var(--bg);
+    flex-shrink: 0;
+  }
+
+  .classify-again-btn {
+    width: 100%;
+    background: none;
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    padding: 14px;
+    border-radius: 2px;
+    cursor: pointer;
+    touch-action: manipulation;
+    transition: all 0.15s;
+  }
+
+  .classify-again-btn:active {
+    border-color: var(--border-active);
+    color: var(--text);
+  }
+
+  /* ── DESKTOP ── */
+  @media (min-width: 720px) {
+    main {
+      display: grid;
+      grid-template-columns: 1fr 1px 1fr;
+      max-width: 1100px;
+      margin: 0 auto;
+      width: 100%;
+      overflow: visible;
+    }
+
+    .view {
+      min-height: calc(100dvh - 49px);
+    }
+
+    .input-view { display: flex !important; }
+
+    .loading-view,
+    .result-view {
+      grid-column: 3;
+      grid-row: 1;
+    }
+
+    .desktop-divider {
+      display: block;
+      grid-column: 2;
+      grid-row: 1;
+      background: var(--border);
+    }
+
+    .result-view {
+      padding: 0;
+    }
+
+    .verdict-hero {
+      min-height: 300px;
+      padding: 40px 40px 32px;
+    }
+
+    .verdict-word { font-size: 72px; }
+
+    .classify-again-bar {
+      padding-bottom: 14px;
+    }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wordmark">ORA<em>CLE</em></div>
+  <div class="session-pill" id="session-pill">0 classifications</div>
+</header>
+
+<main id="main">
+
+  <!-- ── INPUT VIEW ── -->
+  <div class="view input-view" id="input-view">
+    <div class="section-label">Input</div>
+
+    <label class="field-label" for="api-key-input">Anthropic API Key</label>
+    <input
+      type="password"
+      id="api-key-input"
+      class="api-key-input"
+      placeholder="sk-ant-..."
+      autocomplete="off"
+      spellcheck="false"
+    >
+    <div class="api-status" id="api-status"></div>
+
+    <label class="field-label" for="rule-input">Classification rule</label>
+    <textarea
+      class="rule-input"
+      id="rule-input"
+      placeholder="Is this a hotdog?"
+      maxlength="200"
+      autocomplete="off"
+      autocorrect="off"
+      spellcheck="false"
+    ></textarea>
+
+    <div class="rule-presets">
+      <button class="preset-btn" onclick="setRule('Is this a hotdog?')">Is this a hotdog?</button>
+      <button class="preset-btn" onclick="setRule('Is this a dad shoe?')">Dad shoe?</button>
+      <button class="preset-btn" onclick="setRule('Would Dieter Rams approve?')">Dieter Rams?</button>
+      <button class="preset-btn" onclick="setRule('Is this pre-2010?')">Pre-2010?</button>
+      <button class="preset-btn" onclick="setRule('Would this survive a dishwasher?')">Dishwasher safe?</button>
+      <button class="preset-btn" onclick="setRule('Was this designed by a committee?')">By committee?</button>
+    </div>
+
+    <label class="field-label">Subject image</label>
+    <div class="upload-area" id="upload-area" onclick="document.getElementById('file-input').click()">
+      <div class="upload-placeholder" id="upload-placeholder">
+        <div class="upload-icon">⊕</div>
+        <div class="upload-text">Tap to upload<br>or drag an image</div>
+      </div>
+      <img id="preview-img" alt="preview" style="display:none">
+      <div class="replace-overlay"><span>Replace</span></div>
+    </div>
+    <input type="file" id="file-input" accept="image/*" capture="environment">
+
+    <button class="classify-btn" id="classify-btn" disabled onclick="classify()">
+      Run Classification
+    </button>
+    <div class="error-pill" id="error-pill"></div>
+  </div>
+
+  <!-- ── DESKTOP DIVIDER ── -->
+  <div class="desktop-divider" style="display:none"></div>
+
+  <!-- ── LOADING VIEW ── -->
+  <div class="view loading-view hidden" id="loading-view">
+    <img id="loading-thumb" class="loading-img-thumb" alt="">
+    <div class="scanner">
+      <div class="scanner-ring"></div>
+      <div class="scanner-ring-2"></div>
+      <div class="scanner-dot"></div>
+    </div>
+    <div class="loading-label">Classifying</div>
+    <div class="loading-rule" id="loading-rule-text"></div>
+  </div>
+
+  <!-- ── RESULT VIEW ── -->
+  <div class="view result-view hidden" id="result-view">
+    <div class="verdict-hero" id="verdict-hero">
+      <img class="verdict-hero-bg" id="verdict-hero-bg" alt="" aria-hidden="true">
+      <div class="verdict-count" id="verdict-count">—</div>
+      <div class="verdict-word" id="verdict-word"></div>
+      <div class="verdict-rule-text" id="verdict-rule-text"></div>
+      <div class="confidence-block">
+        <div class="confidence-header">
+          <span>Confidence</span>
+          <span class="confidence-num" id="conf-num">—</span>
+        </div>
+        <div class="confidence-track">
+          <div class="confidence-fill" id="conf-fill" style="width:0%"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="verdict-details">
+      <div class="detail-block">
+        <div class="detail-label">Rationale</div>
+        <div class="rationale-text" id="rationale-text"></div>
+      </div>
+      <div class="detail-block" id="history-block" style="display:none">
+        <div class="detail-label">Session log</div>
+        <div id="history-list"></div>
+      </div>
+    </div>
+
+    <div class="classify-again-bar">
+      <button class="classify-again-btn" onclick="resetToInput()">
+        Classify another →
+      </button>
+    </div>
+  </div>
+
+</main>
+
+<script>
+  let imageBase64 = null;
+  let imageType   = null;
+  let classifyCount = 0;
+  const isMobile = () => window.innerWidth < 720;
+
+  const ruleInput   = document.getElementById('rule-input');
+  const classifyBtn = document.getElementById('classify-btn');
+  const fileInput   = document.getElementById('file-input');
+  const uploadArea  = document.getElementById('upload-area');
+  const previewImg  = document.getElementById('preview-img');
+  const placeholder = document.getElementById('upload-placeholder');
+  const errorPill   = document.getElementById('error-pill');
+  const apiKeyInput = document.getElementById('api-key-input');
+  const apiStatus   = document.getElementById('api-status');
+
+  // ── API KEY (sessionStorage — clears on tab close) ──
+  const savedKey = sessionStorage.getItem('oracle_api_key');
+  if (savedKey) {
+    apiKeyInput.value = savedKey;
+    apiStatus.textContent = '● key active';
+    apiStatus.classList.add('saved');
+  }
+
+  apiKeyInput.addEventListener('input', () => {
+    const key = apiKeyInput.value.trim();
+    if (key) {
+      sessionStorage.setItem('oracle_api_key', key);
+      apiStatus.textContent = '● key active';
+      apiStatus.classList.add('saved');
+    } else {
+      sessionStorage.removeItem('oracle_api_key');
+      apiStatus.textContent = '';
+      apiStatus.classList.remove('saved');
+    }
+    updateBtn();
+  });
+
+  function updateBtn() {
+    classifyBtn.disabled = !(imageBase64 && ruleInput.value.trim() && apiKeyInput.value.trim());
+  }
+
+  ruleInput.addEventListener('input', updateBtn);
+
+  function setRule(text) {
+    ruleInput.value = text;
+    updateBtn();
+  }
+
+  function loadImage(file) {
+    if (!file || !file.type.startsWith('image/')) return;
+    const reader = new FileReader();
+    reader.onload = e => {
+      const dataUrl = e.target.result;
+      imageBase64 = dataUrl.split(',')[1];
+      imageType   = file.type;
+      previewImg.src = dataUrl;
+      previewImg.style.display = 'block';
+      placeholder.style.display = 'none';
+      uploadArea.classList.add('has-image');
+      updateBtn();
+    };
+    reader.readAsDataURL(file);
+  }
+
+  fileInput.addEventListener('change', e => loadImage(e.target.files[0]));
+
+  uploadArea.addEventListener('dragover', e => {
+    e.preventDefault();
+    uploadArea.style.borderColor = 'rgba(255,255,255,0.22)';
+  });
+  uploadArea.addEventListener('dragleave', () => {
+    uploadArea.style.borderColor = '';
+  });
+  uploadArea.addEventListener('drop', e => {
+    e.preventDefault();
+    uploadArea.style.borderColor = '';
+    loadImage(e.dataTransfer.files[0]);
+  });
+
+  function showView(name) {
+    const views = ['input-view', 'loading-view', 'result-view'];
+    views.forEach(id => {
+      const el = document.getElementById(id);
+      if (id === name + '-view') {
+        el.classList.remove('hidden');
+        if (isMobile() || name !== 'input') {
+          el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      } else {
+        if (isMobile() || id !== 'input-view') {
+          el.classList.add('hidden');
+        }
+      }
+    });
+  }
+
+  function resetToInput() {
+    showView('input');
+    if (isMobile()) {
+      document.getElementById('input-view').classList.remove('hidden');
+    }
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  async function classify() {
+    const rule   = ruleInput.value.trim();
+    const apiKey = apiKeyInput.value.trim();
+    if (!rule || !imageBase64 || !apiKey) return;
+
+    errorPill.classList.remove('visible');
+    classifyBtn.disabled = true;
+
+    document.getElementById('loading-rule-text').textContent = `"${rule}"`;
+    document.getElementById('loading-thumb').src = previewImg.src;
+    showView('loading');
+
+    const prompt = `You are a precise binary classification system called ORACLE. The user provides a yes/no rule and an image. Your job: determine whether the image satisfies the rule.
+
+Rule: "${rule}"
+
+Respond with ONLY a JSON object, no markdown, no explanation outside the JSON:
+{
+  "verdict": "YES" or "NO",
+  "confidence": a number from 1 to 100 (integer),
+  "rationale": "One single sentence, deadpan and direct, explaining why. Max 18 words. No hedging."
+}`;
+
+    try {
+      const res = await fetch('/proxy', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': apiKey,
+        },
+        body: JSON.stringify({
+          model: 'claude-sonnet-4-6',
+          max_tokens: 1000,
+          messages: [{
+            role: 'user',
+            content: [
+              { type: 'image', source: { type: 'base64', media_type: imageType, data: imageBase64 } },
+              { type: 'text', text: prompt }
+            ]
+          }]
+        })
+      });
+
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err?.error?.message || `HTTP ${res.status}`);
+      }
+
+      const data = await res.json();
+      const raw  = data.content.map(b => b.text || '').join('').trim();
+
+      let parsed;
+      try {
+        parsed = JSON.parse(raw.replace(/```json|```/g, '').trim());
+      } catch {
+        throw new Error('Could not parse model response.');
+      }
+
+      const { verdict, confidence, rationale } = parsed;
+      const isYes = verdict.toUpperCase() === 'YES';
+
+      const hero     = document.getElementById('verdict-hero');
+      const heroBg   = document.getElementById('verdict-hero-bg');
+      const wordEl   = document.getElementById('verdict-word');
+      const ruleEl   = document.getElementById('verdict-rule-text');
+      const confNum  = document.getElementById('conf-num');
+      const confFill = document.getElementById('conf-fill');
+      const ratEl    = document.getElementById('rationale-text');
+      const countEl  = document.getElementById('verdict-count');
+
+      // Set hero background image
+      heroBg.src = previewImg.src;
+
+      hero.className     = `verdict-hero ${isYes ? 'yes' : 'no'}`;
+      wordEl.className   = `verdict-word ${isYes ? 'yes' : 'no'}`;
+      wordEl.textContent = isYes ? 'Yes' : 'No';
+      wordEl.style.animation = 'none';
+      wordEl.offsetHeight;
+      wordEl.style.animation = '';
+
+      ruleEl.textContent  = `"${rule}"`;
+      confNum.textContent = `${confidence}%`;
+      confFill.className  = `confidence-fill ${isYes ? 'yes' : 'no'}`;
+      setTimeout(() => { confFill.style.width = `${confidence}%`; }, 80);
+      ratEl.textContent = rationale;
+
+      classifyCount++;
+      countEl.textContent = `#${String(classifyCount).padStart(3, '0')}`;
+      document.getElementById('session-pill').textContent =
+        `${classifyCount} classification${classifyCount === 1 ? '' : 's'}`;
+
+      addHistory(verdict, rule, confidence);
+      showView('result');
+
+    } catch (err) {
+      showView('input');
+      errorPill.textContent = `Classification failed — ${err.message}`;
+      errorPill.classList.add('visible');
+    } finally {
+      classifyBtn.disabled = false;
+    }
+  }
+
+  function addHistory(verdict, rule, confidence) {
+    const block = document.getElementById('history-block');
+    const list  = document.getElementById('history-list');
+    block.style.display = 'block';
+    const isYes = verdict.toUpperCase() === 'YES';
+    const row = document.createElement('div');
+    row.className = 'history-row';
+    row.innerHTML = `
+      <span class="history-verdict ${isYes ? 'yes' : 'no'}">${isYes ? 'Yes' : 'No'}</span>
+      <span class="history-rule">${rule}</span>
+      <span class="history-conf">${confidence}%</span>`;
+    list.insertBefore(row, list.firstChild);
+  }
+</script>
+</body>
+</html>
